@@ -11,9 +11,24 @@ Everything runs on **your own hardware**. No audio ever leaves your machines.
 
 | Task | Model | License |
 | --- | --- | --- |
-| Speech-to-text | [`nvidia/parakeet-tdt-0.6b-v2`](https://huggingface.co/nvidia/parakeet-tdt-0.6b-v2) (NeMo) — top open-source model on the HF Open ASR leaderboard | CC-BY-4.0 |
+| Speech-to-text | [`nvidia/parakeet-tdt-0.6b-v2`](https://huggingface.co/nvidia/parakeet-tdt-0.6b-v2) — top open-source model on the HF Open ASR leaderboard | CC-BY-4.0 |
 | Speaker diarization | [`nvidia/diar_sortformer_4spk-v1`](https://huggingface.co/nvidia/diar_sortformer_4spk-v1) (NeMo Sortformer) | CC-BY-NC-4.0 |
 | Note enhancement | Any [Nemotron](https://huggingface.co/nvidia/Llama-3.1-Nemotron-Nano-8B-v1) open-weights model behind an OpenAI-compatible endpoint (vLLM / Ollama / NIM) | NVIDIA Open Model License |
+
+### ASR engines (`PERCH_ENGINE`)
+
+Perch runs Parakeet through your choice of engine — same NVIDIA weights,
+different runtimes:
+
+| Engine | Runtime | Hardware | Setup |
+| --- | --- | --- | --- |
+| `nemo` | NVIDIA NeMo | GPU (CUDA) | `pip install -r requirements-nemo.txt` |
+| `onnx` | [sherpa-onnx](https://github.com/k2-fsa/sherpa-onnx) (open source), int8 export of the same Parakeet model | **CPU**, real-time | `pip install -r requirements-onnx.txt && ./scripts/get_parakeet_onnx.sh` |
+| `mock` | — | any | nothing; synthetic transcripts for UI development |
+
+`PERCH_ENGINE=auto` (default) picks `nemo` when installed, else `onnx` when
+weights are present, else `mock`. Diarization currently requires the NeMo
+engine.
 
 ## Repo layout
 

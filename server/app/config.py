@@ -13,12 +13,25 @@ DATA_DIR = Path(os.environ.get("PERCH_DATA_DIR", "data")).resolve()
 AUDIO_DIR = DATA_DIR / "audio"
 DB_PATH = DATA_DIR / "perch.db"
 
-# --- ASR (NVIDIA NeMo, open source) -----------------------------------------
+# --- ASR (NVIDIA Parakeet, open source) --------------------------------------
 # Batch model: best-in-class open ASR on the HF Open ASR leaderboard (CC-BY-4.0).
 ASR_MODEL = os.environ.get("PERCH_ASR_MODEL", "nvidia/parakeet-tdt-0.6b-v2")
-# Run without NeMo/GPU: emits synthetic transcripts so the UI can be developed
-# on any machine. Automatically enabled when NeMo isn't importable.
+# Engine selection:
+#   auto  - NeMo (GPU-class) if installed, else ONNX (CPU-friendly) if weights
+#           are present, else the mock engine
+#   nemo  - NVIDIA NeMo + Parakeet from Hugging Face
+#   onnx  - sherpa-onnx runtime + Parakeet ONNX weights (see
+#           scripts/get_parakeet_onnx.sh); great CPU real-time performance
+#   mock  - synthetic transcripts for UI development on any machine
+ENGINE = os.environ.get("PERCH_ENGINE", "auto").lower()
+# Directory holding encoder/decoder/joiner .onnx + tokens.txt for engine=onnx.
+ONNX_DIR = Path(
+    os.environ.get("PERCH_ONNX_DIR", "models/parakeet-tdt-0.6b-v2-onnx")
+).resolve()
+# Back-compat alias for PERCH_ENGINE=mock.
 MOCK_ASR = _bool("PERCH_MOCK_ASR", False)
+if MOCK_ASR:
+    ENGINE = "mock"
 # Incremental decode cadence for live transcription (seconds of new audio
 # between re-decodes of the open utterance).
 STREAM_DECODE_INTERVAL = float(os.environ.get("PERCH_STREAM_DECODE_INTERVAL", "2.0"))

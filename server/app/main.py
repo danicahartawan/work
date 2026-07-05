@@ -9,7 +9,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from . import config, db
-from .asr.engine import is_mock
+from .asr.engine import engine_name, is_mock
 from .routes import live, meetings
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
@@ -38,7 +38,7 @@ def startup() -> None:
 def health():
     return {
         "ok": True,
-        "asr_engine": "mock" if is_mock() else config.ASR_MODEL,
+        "asr_engine": engine_name(),
         "diarization": config.DIARIZATION_ENABLED and not is_mock(),
         "llm_configured": bool(config.LLM_BASE_URL),
     }

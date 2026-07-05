@@ -140,9 +140,12 @@ async def _full_pass(meeting_id: str, wav_path: str) -> bool:
     )
     if not segments:
         return False
-    diarizer = diarize.get_diarizer()
-    if diarizer:
-        turns = await loop.run_in_executor(None, diarizer.diarize_file, wav_path)
-        diarize.assign_speakers(segments, turns)
+    try:
+        diarizer = diarize.get_diarizer()
+        if diarizer:
+            turns = await loop.run_in_executor(None, diarizer.diarize_file, wav_path)
+            diarize.assign_speakers(segments, turns)
+    except Exception:
+        log.exception("Diarization failed; keeping transcript without speakers")
     db.replace_segments(meeting_id, segments)
     return True

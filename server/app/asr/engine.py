@@ -9,6 +9,7 @@ NeMo or a GPU so the UI and extension can be developed anywhere.
 from __future__ import annotations
 
 import logging
+import os
 import threading
 from typing import Optional, Protocol
 
@@ -103,6 +104,66 @@ class MockEngine:
         return segments
 
 
+class OnnxParakeetEngine:
+    """Parakeet-TDT-0.6b-v2 via the open-source sherpa-onnx runtime.
+
+    Same NVIDIA weights as the NeMo engine, exported to ONNX (int8) — runs in
+    real time on CPU. Fetch the model with scripts/get_parakeet_onnx.sh.
+    """
+
+    def __init__(self, model_dir=None):
+        import sherpa_onnx
+        from pathlib import Path
+
+        d = Path(model_dir or config.ONNX_DIR)
+        log.info("Loading Parakeet ONNX model from %s ...", d)
+        self._rec = sherpa_onnx.OfflineRecognizer.from_transducer(
+            encoder=str(next(d.glob("encoder*.onnx"))),
+            decoder=str(next(d.glob("decoder*.onnx"))),
+            joiner=str(next(d.glob("joiner*.onnx"))),
+            tokens=str(d / "tokens.txt"),
+            num_threads=os.cpu_count() or 4,
+            model_type="nemo_transducer",
+        )
+        self._lock = threading.Lock()
+
+    def transcribe(self, audio: np.ndarray, sample_rate: int) -> list[Segment]:
+        stream = self._rec.create_stream()
+        stream.accept_waveform(sample_rate, audio)
+        with self._lock:
+            self._rec.decode_stream(stream)
+        result = stream.result
+        return self._to_segments(result, len(audio) / sample_rate)
+
+    @staticmethod
+    def _to_segments(result, duration: float, gap: float = 0.8) -> list[Segment]:
+        """Group decoded tokens into segments, splitting on silent gaps."""
+        tokens = list(getattr(result, "tokens", []) or [])
+        stamps = list(getattr(result, "timestamps", []) or [])
+        text = (result.text or "").strip()
+        if not text:
+            return []
+        if len(tokens) != len(stamps) or not stamps:
+            return [Segment(start=0.0, end=round(duration, 2), text=text)]
+
+        segments: list[Segment] = []
+        cur_tokens: list[str] = [tokens[0]]
+        cur_start = prev = stamps[0]
+        for tok, ts in zip(tokens[1:], stamps[1:]):
+            if ts - prev > gap:
+                segments.append(_bpe_segment(cur_tokens, cur_start, prev))
+                cur_tokens, cur_start = [], ts
+            cur_tokens.append(tok)
+            prev = ts
+        segments.append(_bpe_segment(cur_tokens, cur_start, min(prev + 0.3, duration)))
+        return [s for s in segments if s.text]
+
+
+def _bpe_segment(tokens: list[str], start: float, end: float) -> Segment:
+    text = "".join(tokens).replace("▁", " ").strip()
+    return Segment(start=round(start, 2), end=round(end, 2), text=text)
+
+
 _engine: Optional[ASREngine] = None
 _engine_lock = threading.Lock()
 
@@ -116,23 +177,52 @@ def nemo_available() -> bool:
         return False
 
 
+def onnx_available() -> bool:
+    try:
+        import sherpa_onnx  # noqa: F401
+    except Exception:
+        return False
+    return config.ONNX_DIR.is_dir() and any(config.ONNX_DIR.glob("encoder*.onnx"))
+
+
+def _build_engine() -> ASREngine:
+    choice = config.ENGINE
+    if choice == "auto":
+        if nemo_available():
+            choice = "nemo"
+        elif onnx_available():
+            choice = "onnx"
+        else:
+            log.warning(
+                "No real ASR available — using the mock engine. Install "
+                "requirements-nemo.txt (GPU) or run scripts/get_parakeet_onnx.sh "
+                "and `pip install sherpa-onnx` (CPU)."
+            )
+            choice = "mock"
+    if choice == "nemo":
+        return NemoParakeetEngine()
+    if choice == "onnx":
+        return OnnxParakeetEngine()
+    return MockEngine()
+
+
 def get_engine() -> ASREngine:
-    """Singleton engine: Parakeet when NeMo is installed, mock otherwise."""
+    """Singleton engine chosen by PERCH_ENGINE (auto: nemo > onnx > mock)."""
     global _engine
     with _engine_lock:
         if _engine is None:
-            if not config.MOCK_ASR and nemo_available():
-                _engine = NemoParakeetEngine()
-            else:
-                if not config.MOCK_ASR:
-                    log.warning(
-                        "NeMo is not installed — falling back to the mock ASR "
-                        "engine. Install server/requirements-nemo.txt for real "
-                        "transcription."
-                    )
-                _engine = MockEngine()
+            _engine = _build_engine()
         return _engine
 
 
 def is_mock() -> bool:
     return isinstance(get_engine(), MockEngine)
+
+
+def engine_name() -> str:
+    engine = get_engine()
+    if isinstance(engine, NemoParakeetEngine):
+        return f"nemo:{config.ASR_MODEL}"
+    if isinstance(engine, OnnxParakeetEngine):
+        return "onnx:nvidia/parakeet-tdt-0.6b-v2 (sherpa-onnx)"
+    return "mock"
