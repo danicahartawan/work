@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Server data (recordings, sqlite db)
+server/data/
+data/
+
+# Node
+node_modules/
+web/dist/
+
+# Misc
+.DS_Store
+*.log
+web/*.tsbuildinfo

@@ -1,0 +1,18 @@
+body { width: 300px; margin: 0; font: 13.5px -apple-system, "Segoe UI", Roboto, sans-serif; color: #1d1c1a; background: #faf9f7; }
+header { font-weight: 700; font-size: 15px; padding: 12px 14px 6px; }
+.panel { display: grid; gap: 10px; padding: 8px 14px 14px; }
+label { display: grid; gap: 4px; color: #6f6b64; font-size: 12px; }
+label.row { grid-auto-flow: column; justify-content: start; align-items: center; color: #1d1c1a; font-size: 13px; }
+input[type="text"], input:not([type]) { padding: 7px 9px; border: 1px solid #e0ddd6; border-radius: 7px; font: inherit; background: #fff; }
+button { font: inherit; padding: 8px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; }
+button.primary { background: #5b8c51; color: #fff; }
+button.danger { background: #c4483f; color: #fff; }
+.hint { color: #8a867e; font-size: 12px; margin: 0; }
+.rec-row { display: flex; align-items: center; gap: 8px; font-weight: 600; }
+.timer, #timer { font-variant-numeric: tabular-nums; color: #6f6b64; font-weight: 400; }
+.dot { width: 10px; height: 10px; border-radius: 50%; background: #e0443a; animation: pulse 1.2s infinite; }
+@keyframes pulse { 50% { opacity: 0.3; } }
+.caption { min-height: 3em; margin: 0; color: #55524c; font-style: italic; background: #fff; border: 1px solid #e8e5df; border-radius: 8px; padding: 8px; }
+a { color: #5b8c51; font-size: 13px; }
+.error { color: #c4483f; padding: 0 14px 12px; margin: 0; font-size: 12.5px; }
+.hidden { display: none; }

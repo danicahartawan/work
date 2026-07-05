@@ -1,0 +1,13 @@
+{
+  "manifest_version": 3,
+  "name": "Perch — meeting transcription",
+  "version": "0.1.0",
+  "description": "Live-transcribe any meeting tab (Google Meet, Zoom web, ...) with NVIDIA's open-source Parakeet ASR via your Perch server.",
+  "permissions": ["tabCapture", "offscreen", "storage", "activeTab"],
+  "host_permissions": ["http://localhost/*", "http://127.0.0.1/*"],
+  "background": { "service_worker": "background.js" },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Perch"
+  }
+}

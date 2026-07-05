@@ -1,0 +1,23 @@
+services:
+  server:
+    build: ./server
+    ports:
+      - "8000:8000"
+    volumes:
+      - perch-data:/data
+      - hf-cache:/root/.cache/huggingface
+    environment:
+      # Optional: point at a Nemotron OpenAI-compatible endpoint for AI notes.
+      - PERCH_LLM_BASE_URL=${PERCH_LLM_BASE_URL:-}
+      - PERCH_LLM_MODEL=${PERCH_LLM_MODEL:-nvidia/Llama-3.1-Nemotron-Nano-8B-v1}
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+volumes:
+  perch-data:
+  hf-cache:

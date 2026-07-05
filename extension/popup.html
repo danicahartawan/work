@@ -1,0 +1,34 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <header>🪶 Perch</header>
+
+    <div id="idle" class="panel">
+      <label>Meeting title
+        <input id="title" placeholder="Use the tab's title" />
+      </label>
+      <label>Server URL
+        <input id="server" placeholder="http://localhost:8000" />
+      </label>
+      <label class="row">
+        <input type="checkbox" id="mic" checked /> include my microphone
+      </label>
+      <button id="start" class="primary">● Record this tab</button>
+      <p class="hint">Open your meeting tab (Meet, Zoom, …) first, then click record.</p>
+    </div>
+
+    <div id="live" class="panel hidden">
+      <div class="rec-row"><span class="dot"></span> Recording <span id="timer">0:00</span></div>
+      <p id="caption" class="caption">Listening…</p>
+      <button id="stop" class="danger">■ Stop &amp; finish</button>
+      <a id="open-web" target="_blank">Open in Perch →</a>
+    </div>
+
+    <p id="error" class="error hidden"></p>
+    <script src="popup.js"></script>
+  </body>
+</html>

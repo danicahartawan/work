@@ -1,0 +1,4 @@
+# NVIDIA's open-source speech stack. A CUDA GPU is strongly recommended.
+# Install after requirements.txt:  pip install -r requirements-nemo.txt
+nemo_toolkit[asr]>=2.2
+cuda-python>=12.3 ; platform_system == "Linux"
