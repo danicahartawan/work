@@ -17,10 +17,26 @@ nvkit/
 │   ├── nvkit-transcription/  Audio transcription via NVIDIA Riva / Parakeet NIM
 │   ├── nvkit-tableau/        Tableau REST API (view data, dashboards)
 │   ├── nvkit-wordpress/      WordPress REST API (draft posts)
-│   └── nvkit-meltwater/      Meltwater media-monitoring API
+│   ├── nvkit-meltwater/      Meltwater media-monitoring API
+│   └── nvkit-platform/       Control Center: drag-and-drop workflow builder UI
 └── workflows/
     └── pr-team/              Orchestrator + 5 specialist agents for the PR team
 ```
+
+## Control Center (start here)
+
+The fastest way to experience nvkit is the Control Center — a web app where
+each API is a pixel "worker" you drag into a mission lane, brief, and deploy.
+Missions run instantly in demo mode (no credentials needed) and export to
+real NAT `workflow.yml` files.
+
+```bash
+pip install -e packages/nvkit-platform
+nvkit-platform            # open http://localhost:8100
+```
+
+See [`packages/nvkit-platform/README.md`](packages/nvkit-platform/README.md)
+for demos to try.
 
 Every package registers its tools through NAT entry points, so any team can
 `pip install nvkit-tableau` (or reference it in a uv workspace) and wire the

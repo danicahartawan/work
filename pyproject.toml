@@ -10,6 +10,7 @@ dependencies = [
     "nvkit-tableau",
     "nvkit-wordpress",
     "nvkit-meltwater",
+    "nvkit-platform",
 ]
 
 [tool.uv.workspace]
@@ -22,3 +23,4 @@ nvkit-transcription = { workspace = true }
 nvkit-tableau = { workspace = true }
 nvkit-wordpress = { workspace = true }
 nvkit-meltwater = { workspace = true }
+nvkit-platform = { workspace = true }

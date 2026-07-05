@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "nvkit-platform"
+version = "0.1.0"
+description = "nvkit Control Center: drag-and-drop workflow builder and agent dashboard for the nvkit API agents"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.110",
+    "uvicorn>=0.29",
+    "pyyaml>=6.0",
+]
+
+[project.scripts]
+nvkit-platform = "nvkit_platform.app:main"
+
+[tool.setuptools.package-data]
+nvkit_platform = ["static/*"]
