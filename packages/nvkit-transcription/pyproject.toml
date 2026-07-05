@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "nvkit-transcription"
+version = "0.1.0"
+description = "NAT tools for audio transcription via NVIDIA Riva / Parakeet ASR NIM"
+requires-python = ">=3.11"
+dependencies = [
+    "nvidia-nemo-agent-toolkit",
+    "nvkit-core",
+]
+
+[project.entry-points."nat.plugins.functions"]
+nvkit_transcribe_audio = "nvkit_transcription.register:transcribe_audio"
+
+[project.entry-points."nat.components"]
+nvkit_transcription = "nvkit_transcription.register"

@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "nvkit-tableau"
+version = "0.1.0"
+description = "NAT tools for querying Tableau dashboards via the Tableau REST API"
+requires-python = ">=3.11"
+dependencies = [
+    "nvidia-nemo-agent-toolkit",
+    "nvkit-core",
+    "httpx>=0.27",
+]
+
+[project.entry-points."nat.plugins.functions"]
+nvkit_tableau_view_data = "nvkit_tableau.register:tableau_view_data"
+
+[project.entry-points."nat.components"]
+nvkit_tableau = "nvkit_tableau.register"

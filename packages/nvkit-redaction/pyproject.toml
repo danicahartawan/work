@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "nvkit-redaction"
+version = "0.1.0"
+description = "NAT tools for redacting sensitive content via Google Cloud DLP"
+requires-python = ">=3.11"
+dependencies = [
+    "nvidia-nemo-agent-toolkit",
+    "nvkit-core",
+    "httpx>=0.27",
+]
+
+# NAT >= 1.8 plugin discovery
+[project.entry-points."nat.plugins.functions"]
+nvkit_redact_text = "nvkit_redaction.register:redact_text"
+
+# Legacy NAT < 1.8 discovery (module import runs the decorators)
+[project.entry-points."nat.components"]
+nvkit_redaction = "nvkit_redaction.register"

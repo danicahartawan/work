@@ -1,0 +1,104 @@
+# nvkit PR-team workflow
+#
+# A ReAct orchestrator routes requests from PR staff to five specialist
+# tool-calling agents, one per external API. Run with:
+#
+#   nat run --config_file workflows/pr-team/workflow.yml --input "..."
+
+llms:
+  orchestrator_llm:
+    _type: nim
+    model_name: meta/llama-3.3-70b-instruct
+    temperature: 0.0
+    max_tokens: 2048
+
+  worker_llm:
+    _type: nim
+    model_name: meta/llama-3.3-70b-instruct
+    temperature: 0.0
+    max_tokens: 2048
+
+functions:
+  # ---- raw API tools (one nvkit package each) ----
+  redact_text:
+    _type: nvkit_redact_text
+
+  transcribe_audio:
+    _type: nvkit_transcribe_audio
+    language_code: en-US
+
+  tableau_view_data:
+    _type: nvkit_tableau_view_data
+    max_rows: 200
+
+  wordpress_create_draft:
+    _type: nvkit_wordpress_create_draft
+
+  meltwater_search:
+    _type: nvkit_meltwater_search
+    days_back: 7
+
+  # ---- specialist agents (agents-as-tools for the orchestrator) ----
+  redaction_agent:
+    _type: tool_calling_agent
+    description: >
+      Redacts sensitive information (PII, embargoed details) from text or
+      documents before external release. Use for any "redact/sanitize/scrub"
+      request.
+    tool_names: [redact_text]
+    llm_name: worker_llm
+    verbose: true
+    handle_tool_errors: true
+
+  transcription_agent:
+    _type: tool_calling_agent
+    description: >
+      Transcribes audio files (interviews, briefings, press events) to text.
+      Input should include the audio file path.
+    tool_names: [transcribe_audio]
+    llm_name: worker_llm
+    verbose: true
+    handle_tool_errors: true
+
+  tableau_agent:
+    _type: tool_calling_agent
+    description: >
+      Answers questions about media/campaign metrics by pulling data from
+      Tableau dashboards by view name.
+    tool_names: [tableau_view_data]
+    llm_name: worker_llm
+    verbose: true
+    handle_tool_errors: true
+
+  wordpress_agent:
+    _type: tool_calling_agent
+    description: >
+      Creates DRAFT posts on the team WordPress site for human review.
+      Never publishes directly.
+    tool_names: [wordpress_create_draft]
+    llm_name: worker_llm
+    verbose: true
+    handle_tool_errors: true
+
+  meltwater_agent:
+    _type: tool_calling_agent
+    description: >
+      Searches recent media coverage (news and social) for topics, brands,
+      or spokespeople via Meltwater.
+    tool_names: [meltwater_search]
+    llm_name: worker_llm
+    verbose: true
+    handle_tool_errors: true
+
+workflow:
+  _type: react_agent
+  llm_name: orchestrator_llm
+  tool_names:
+    - redaction_agent
+    - transcription_agent
+    - tableau_agent
+    - wordpress_agent
+    - meltwater_agent
+  verbose: true
+  handle_parsing_errors: true
+  max_retries: 2

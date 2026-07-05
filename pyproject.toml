@@ -1,0 +1,24 @@
+[project]
+name = "nvkit"
+version = "0.1.0"
+description = "Reusable AI-agent building blocks for NVIDIA knowledge workers, built on NeMo Agent Toolkit"
+requires-python = ">=3.11"
+dependencies = [
+    "nvkit-core",
+    "nvkit-redaction",
+    "nvkit-transcription",
+    "nvkit-tableau",
+    "nvkit-wordpress",
+    "nvkit-meltwater",
+]
+
+[tool.uv.workspace]
+members = ["packages/*"]
+
+[tool.uv.sources]
+nvkit-core = { workspace = true }
+nvkit-redaction = { workspace = true }
+nvkit-transcription = { workspace = true }
+nvkit-tableau = { workspace = true }
+nvkit-wordpress = { workspace = true }
+nvkit-meltwater = { workspace = true }
