@@ -2,8 +2,13 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>nvkit Control Center</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#0b0f14">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<title>nvkit Missions</title>
 <style>
   :root {
     --bg: #0b0f14;
@@ -12,187 +17,183 @@
     --line: #2a3542;
     --text: #d7e2ec;
     --dim: #7d8fa1;
-    --accent: #76b900; /* NVIDIA green */
+    --accent: #76b900;
     --amber: #ffd166;
     --red: #ef476f;
     --good: #06d6a0;
+    --sat: env(safe-area-inset-top, 0px);
+    --sab: env(safe-area-inset-bottom, 0px);
   }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
   html, body { height: 100%; }
   body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: "Courier New", ui-monospace, monospace;
-    font-size: 14px;
-    overflow: hidden;
+    background: var(--bg); color: var(--text);
+    font-family: "Courier New", ui-monospace, monospace; font-size: 14px;
+    display: flex; flex-direction: column;
+    overscroll-behavior: none;
+    max-width: 640px; margin: 0 auto;   /* phone column on desktop too */
   }
-  /* subtle CRT scanlines */
   body::after {
-    content: "";
-    position: fixed; inset: 0;
-    background: repeating-linear-gradient(0deg, rgba(255,255,255,.025) 0 1px, transparent 1px 3px);
+    content: ""; position: fixed; inset: 0;
+    background: repeating-linear-gradient(0deg, rgba(255,255,255,.02) 0 1px, transparent 1px 3px);
     pointer-events: none;
   }
 
   header {
-    display: flex; align-items: baseline; gap: 14px;
-    padding: 12px 18px;
-    border-bottom: 2px solid var(--line);
-    background: var(--panel);
+    padding: calc(10px + var(--sat)) 14px 10px;
+    border-bottom: 2px solid var(--line); background: var(--panel);
+    display: flex; align-items: baseline; gap: 10px;
   }
-  header h1 { font-size: 18px; letter-spacing: 3px; color: var(--accent); }
-  header .sub { color: var(--dim); font-size: 12px; }
-  header .spacer { flex: 1; }
-  header .hint { color: var(--dim); font-size: 12px; }
+  header h1 { font-size: 16px; letter-spacing: 2px; color: var(--accent); }
+  header .sub { color: var(--dim); font-size: 11px; }
 
-  main {
-    display: grid;
-    grid-template-columns: 290px 1fr 400px;
-    gap: 0;
-    height: calc(100% - 47px);
+  /* live status strip while a mission runs */
+  #strip {
+    display: none; align-items: center; gap: 10px;
+    padding: 6px 14px; background: var(--panel2); border-bottom: 1px solid var(--line);
+    font-size: 12px; color: var(--amber);
   }
-  section { overflow-y: auto; padding: 14px; }
-  section + section { border-left: 2px solid var(--line); }
+  #strip.on { display: flex; }
+  #strip canvas { image-rendering: pixelated; animation: bounce .5s infinite alternate; }
+  @keyframes bounce { from { transform: translateY(0); } to { transform: translateY(-4px); } }
+
+  main { flex: 1; overflow-y: auto; padding: 14px 14px calc(14px + var(--sab)); }
+  .tab { display: none; }
+  .tab.active { display: block; }
   .paneltitle {
-    font-size: 12px; letter-spacing: 2px; color: var(--dim);
+    font-size: 11px; letter-spacing: 2px; color: var(--dim);
     margin-bottom: 10px; border-bottom: 1px dashed var(--line); padding-bottom: 6px;
   }
 
-  /* ---- roster ---- */
+  /* ---- squad ---- */
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(155px, 1fr)); gap: 10px; }
   .worker {
-    background: var(--panel);
-    border: 2px solid var(--line);
-    padding: 10px;
-    margin-bottom: 10px;
-    cursor: grab;
-    position: relative;
-    transition: border-color .15s;
+    background: var(--panel); border: 2px solid var(--line);
+    padding: 10px; position: relative; cursor: pointer;
+    transition: transform .08s;
   }
-  .worker:hover { border-color: var(--accent); }
-  .worker .row { display: flex; gap: 10px; align-items: center; }
-  .worker canvas { image-rendering: pixelated; flex: 0 0 auto; }
-  .worker .codename { font-weight: bold; font-size: 15px; }
-  .worker .api { color: var(--dim); font-size: 11px; }
-  .worker .tagline { color: var(--dim); font-size: 11px; margin-top: 6px; line-height: 1.4; }
-  .worker .skills { margin-top: 6px; display: flex; flex-wrap: wrap; gap: 4px; }
-  .worker .skills span {
-    font-size: 10px; padding: 1px 5px; border: 1px solid var(--line); color: var(--dim);
+  .worker:active { transform: scale(.96); border-color: var(--accent); }
+  .worker canvas { image-rendering: pixelated; display: block; margin: 4px auto 6px; }
+  .worker .codename { font-weight: bold; font-size: 15px; text-align: center; }
+  .worker .api { color: var(--dim); font-size: 10px; text-align: center; margin-top: 2px; }
+  .worker .tagline { color: var(--dim); font-size: 10px; margin-top: 6px; line-height: 1.4; min-height: 42px; }
+  .worker .recruit {
+    display: block; width: 100%; margin-top: 8px; padding: 7px 0;
+    background: var(--panel2); border: 1px solid var(--accent); color: var(--accent);
+    font-family: inherit; font-size: 11px; letter-spacing: 1px; cursor: pointer;
   }
-  .badge {
-    position: absolute; top: 8px; right: 8px;
-    font-size: 10px; padding: 1px 6px; letter-spacing: 1px;
-  }
+  .badge { position: absolute; top: 6px; right: 6px; font-size: 9px; padding: 1px 5px; letter-spacing: 1px; }
   .badge.demo { color: var(--amber); border: 1px solid var(--amber); }
   .badge.live { color: var(--good); border: 1px solid var(--good); }
-  .lv { position: absolute; bottom: 8px; right: 8px; font-size: 10px; color: var(--dim); }
-  .status { font-size: 10px; margin-top: 2px; color: var(--dim); }
+  .lv { position: absolute; top: 6px; left: 6px; font-size: 9px; color: var(--dim); }
   .worker.working { border-color: var(--amber); }
   .worker.working canvas { animation: bounce .5s infinite alternate; }
-  .worker.working .status { color: var(--amber); }
-  @keyframes bounce { from { transform: translateY(0); } to { transform: translateY(-5px); } }
+  .worker.pop canvas { animation: pop .3s; }
+  @keyframes pop { 50% { transform: scale(1.35); } }
 
-  /* ---- builder ---- */
+  /* ---- mission ---- */
   .field { margin-bottom: 10px; }
-  .field label { display: block; font-size: 11px; color: var(--dim); margin-bottom: 3px; letter-spacing: 1px; }
+  .field label { display: block; font-size: 10px; color: var(--dim); margin-bottom: 3px; letter-spacing: 1px; }
   input[type=text], textarea {
     width: 100%; background: var(--panel2); color: var(--text);
-    border: 2px solid var(--line); padding: 7px; font-family: inherit; font-size: 13px;
-    resize: vertical;
+    border: 2px solid var(--line); padding: 9px; font-family: inherit; font-size: 13px; resize: vertical;
   }
   input:focus, textarea:focus { outline: none; border-color: var(--accent); }
-
-  .presets { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+  .presets { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
   .chip {
-    font-size: 11px; padding: 4px 9px; cursor: pointer;
+    font-size: 11px; padding: 6px 10px; cursor: pointer;
     background: var(--panel2); border: 1px solid var(--line); color: var(--text);
   }
-  .chip:hover { border-color: var(--accent); color: var(--accent); }
+  .chip:active { border-color: var(--accent); color: var(--accent); }
 
-  #dropzone {
-    min-height: 220px;
-    border: 2px dashed var(--line);
-    padding: 12px;
-    background: rgba(118,185,0,.02);
-  }
-  #dropzone.over { border-color: var(--accent); background: rgba(118,185,0,.07); }
-  .empty { color: var(--dim); text-align: center; padding: 50px 10px; font-size: 13px; line-height: 2; }
+  #lane { min-height: 120px; border: 2px dashed var(--line); padding: 10px; }
+  .empty { color: var(--dim); text-align: center; padding: 28px 8px; font-size: 12px; line-height: 2; }
   .empty b { color: var(--accent); }
-
   .step {
-    background: var(--panel);
-    border: 2px solid var(--line);
-    padding: 10px;
-    display: grid;
-    grid-template-columns: auto 1fr auto;
-    gap: 10px;
-    align-items: start;
+    background: var(--panel); border: 2px solid var(--line); padding: 10px;
+    display: grid; grid-template-columns: auto 1fr; gap: 10px; align-items: start;
   }
   .step canvas { image-rendering: pixelated; }
   .step .who { font-weight: bold; font-size: 13px; margin-bottom: 4px; }
   .step .who small { color: var(--dim); font-weight: normal; }
-  .step textarea { min-height: 44px; font-size: 12px; }
-  .step .ctl { display: flex; flex-direction: column; gap: 4px; }
+  .step textarea { min-height: 40px; font-size: 12px; }
+  .step .ctl { grid-column: 1 / -1; display: flex; gap: 6px; }
   .step .ctl button {
-    background: var(--panel2); color: var(--dim); border: 1px solid var(--line);
-    width: 24px; height: 22px; cursor: pointer; font-family: inherit; font-size: 11px;
+    flex: 1; padding: 7px 0; background: var(--panel2); color: var(--dim);
+    border: 1px solid var(--line); font-family: inherit; font-size: 12px; cursor: pointer;
   }
-  .step .ctl button:hover { color: var(--text); border-color: var(--accent); }
-  .step .stbadge { font-size: 10px; letter-spacing: 1px; margin-top: 4px; display: inline-block; padding: 1px 6px; }
+  .step .ctl button:active { color: var(--text); border-color: var(--accent); }
+  .stbadge { font-size: 9px; letter-spacing: 1px; display: inline-block; padding: 1px 6px; margin-top: 4px; }
   .st-queued  { color: var(--dim); border: 1px solid var(--line); }
   .st-working { color: var(--amber); border: 1px solid var(--amber); animation: blink 1s infinite; }
   .st-done    { color: var(--good); border: 1px solid var(--good); }
   .st-failed  { color: var(--red); border: 1px solid var(--red); }
   @keyframes blink { 50% { opacity: .35; } }
-  .arrow { text-align: center; color: var(--dim); font-size: 13px; padding: 3px 0; }
+  .arrow { text-align: center; color: var(--dim); font-size: 11px; padding: 4px 0; }
 
-  .actions { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+  .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 14px; }
   .btn {
-    font-family: inherit; font-size: 13px; letter-spacing: 1px;
-    padding: 9px 16px; cursor: pointer;
-    background: var(--panel2); color: var(--text); border: 2px solid var(--line);
+    font-family: inherit; font-size: 13px; letter-spacing: 1px; padding: 13px 0;
+    cursor: pointer; background: var(--panel2); color: var(--text); border: 2px solid var(--line);
   }
-  .btn:hover { border-color: var(--accent); }
-  .btn.primary { background: var(--accent); color: #0b0f14; border-color: var(--accent); font-weight: bold; }
-  .btn.primary:disabled { opacity: .5; cursor: default; }
+  .btn:active { border-color: var(--accent); }
+  .btn.primary { grid-column: 1 / -1; background: var(--accent); color: #0b0f14; border-color: var(--accent); font-weight: bold; font-size: 15px; }
+  .btn.primary:disabled { opacity: .5; }
 
-  /* ---- log ---- */
+  /* ---- report ---- */
+  #mstatus { font-size: 13px; letter-spacing: 2px; padding: 8px 10px; border: 2px solid var(--line); margin-bottom: 10px; color: var(--dim); }
+  #mstatus.running { color: var(--amber); border-color: var(--amber); animation: blink 1s infinite; }
+  #mstatus.complete { color: var(--good); border-color: var(--good); }
+  #mstatus.failed { color: var(--red); border-color: var(--red); }
   #log { font-size: 12px; line-height: 1.7; }
   #log .t { color: var(--dim); }
-  #report {
-    margin-top: 12px; background: var(--panel);
-    border: 2px solid var(--good); padding: 10px; display: none;
-  }
-  #report h3 { color: var(--good); font-size: 12px; letter-spacing: 2px; margin-bottom: 8px; }
-  pre {
-    white-space: pre-wrap; word-break: break-word;
-    font-family: inherit; font-size: 12px; line-height: 1.5;
-  }
+  #report { margin-top: 12px; background: var(--panel); border: 2px solid var(--good); padding: 10px; display: none; }
+  #report h3 { color: var(--good); font-size: 11px; letter-spacing: 2px; margin-bottom: 8px; }
+  pre { white-space: pre-wrap; word-break: break-word; font-family: inherit; font-size: 12px; line-height: 1.5; }
   details { margin-top: 8px; border: 1px solid var(--line); background: var(--panel); }
-  details summary { cursor: pointer; padding: 6px 8px; font-size: 12px; color: var(--dim); }
+  details summary { cursor: pointer; padding: 9px 8px; font-size: 12px; color: var(--dim); }
   details pre { padding: 8px; border-top: 1px solid var(--line); }
 
+  /* ---- bottom tab bar ---- */
+  nav {
+    display: flex; border-top: 2px solid var(--line); background: var(--panel);
+    padding-bottom: var(--sab);
+  }
+  nav button {
+    flex: 1; padding: 12px 0 10px; background: none; border: none;
+    color: var(--dim); font-family: inherit; font-size: 12px; letter-spacing: 2px;
+    cursor: pointer; position: relative;
+  }
+  nav button.active { color: var(--accent); }
+  nav button.active::before { content: ""; position: absolute; top: -2px; left: 20%; right: 20%; height: 2px; background: var(--accent); }
+  nav .count {
+    position: absolute; top: 6px; right: calc(50% - 34px);
+    font-size: 9px; min-width: 15px; padding: 1px 3px;
+    background: var(--accent); color: #0b0f14; border-radius: 0; font-weight: bold;
+  }
+
   #toast {
-    position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%);
+    position: fixed; bottom: calc(70px + var(--sab)); left: 50%; transform: translateX(-50%);
     background: var(--panel); border: 2px solid var(--amber); color: var(--amber);
-    padding: 9px 18px; font-size: 13px; display: none; z-index: 10;
+    padding: 9px 16px; font-size: 12px; display: none; z-index: 10; white-space: nowrap;
   }
 </style>
 </head>
 <body>
 <header>
-  <h1>◤ NVKIT CONTROL CENTER ◢</h1>
-  <span class="sub">knowledge-worker agents · drag, brief, deploy</span>
-  <span class="spacer"></span>
-  <span class="hint">drag a worker into the mission lane — or double-click one</span>
+  <h1>◤ NVKIT MISSIONS ◢</h1>
+  <span class="sub">tap a worker · brief it · deploy</span>
 </header>
 
-<main>
-  <section id="rosterpane">
-    <div class="paneltitle">AGENT ROSTER</div>
-    <div id="roster"></div>
-  </section>
+<div id="strip"><canvas id="stripsprite"></canvas><span id="striptext"></span></div>
 
-  <section id="builderpane">
+<main>
+  <div class="tab active" id="tab-squad">
+    <div class="paneltitle">YOUR SQUAD — tap a worker to recruit it onto the mission</div>
+    <div class="grid" id="roster"></div>
+  </div>
+
+  <div class="tab" id="tab-mission">
     <div class="paneltitle">MISSION BUILDER</div>
     <div class="presets" id="presets"></div>
     <div class="field">
@@ -200,33 +201,40 @@
       <input type="text" id="mname" value="My first mission">
     </div>
     <div class="field">
-      <label>MISSION BRIEF (initial input handed to step 1)</label>
+      <label>MISSION BRIEF (handed to step 1)</label>
       <textarea id="mbrief" rows="2" placeholder="e.g. NVIDIA Q2 earnings"></textarea>
     </div>
-    <label style="font-size:11px;color:var(--dim);letter-spacing:1px;">PIPELINE</label>
-    <div id="dropzone"></div>
+    <label style="font-size:10px;color:var(--dim);letter-spacing:1px;">PIPELINE</label>
+    <div id="lane"></div>
     <div class="actions">
       <button class="btn primary" id="runbtn">▶ RUN MISSION</button>
-      <button class="btn" id="exportbtn">⬇ EXPORT NAT YAML</button>
-      <button class="btn" id="savebtn">✚ SAVE AS PRESET</button>
-      <button class="btn" id="clearbtn">CLEAR</button>
+      <button class="btn" id="exportbtn">⬇ NAT YAML</button>
+      <button class="btn" id="savebtn">✚ SAVE PRESET</button>
+      <button class="btn" id="clearbtn" style="grid-column:1/-1">CLEAR</button>
     </div>
-  </section>
+  </div>
 
-  <section id="logpane">
-    <div class="paneltitle">MISSION LOG</div>
-    <div id="log"><span style="color:var(--dim)">Awaiting deployment orders…</span></div>
+  <div class="tab" id="tab-report">
+    <div class="paneltitle">MISSION REPORT</div>
+    <div id="mstatus">NO MISSION YET</div>
+    <div id="log"><span style="color:var(--dim)">Recruit a squad and deploy…</span></div>
     <div id="report"><h3>FINAL REPORT</h3><pre id="reporttext"></pre></div>
     <div id="stepreports"></div>
-  </section>
+  </div>
 </main>
+
+<nav>
+  <button data-tab="squad" class="active">SQUAD</button>
+  <button data-tab="mission">MISSION<span class="count" id="stepcount" style="display:none">0</span></button>
+  <button data-tab="report">REPORT</button>
+</nav>
 
 <div id="toast"></div>
 
 <script>
 "use strict";
 
-/* ---------- pixel sprites: seeded invader-style pets, mirrored 12x12 ---------- */
+/* ---------- pixel sprites (seeded, mirrored 12x12) ---------- */
 function hashStr(s) { let h = 2166136261; for (const c of s) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; }
 function mulberry32(a) { return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
 function shade(hex, f) {
@@ -241,13 +249,8 @@ function drawSprite(canvas, seed, color, scale) {
   ctx.imageSmoothingEnabled = false;
   const grid = Array.from({ length: G }, () => Array(G).fill(null));
   for (let y = 1; y < G - 1; y++)
-    for (let x = 1; x <= 5; x++) {
-      if (rng() < 0.52) {
-        const c = rng() < 0.3 ? shade(color, 0.55) : color;
-        grid[y][x] = c; grid[y][G - 1 - x] = c;
-      }
-    }
-  // eyes
+    for (let x = 1; x <= 5; x++)
+      if (rng() < 0.52) { const c = rng() < 0.3 ? shade(color, 0.55) : color; grid[y][x] = c; grid[y][G - 1 - x] = c; }
   grid[4][3] = grid[4][8] = "#ffffff";
   grid[5][3] = grid[5][8] = "#10151b";
   for (let y = 0; y < G; y++)
@@ -257,37 +260,47 @@ function drawSprite(canvas, seed, color, scale) {
 
 /* ---------- state ---------- */
 let AGENTS = [], BY_ID = {};
-let pipeline = [];            // [{agent_id, instruction}]
+let pipeline = [];
 let pollTimer = null;
-
 const $ = id => document.getElementById(id);
-const toast = msg => { const t = $("toast"); t.textContent = msg; t.style.display = "block"; setTimeout(() => t.style.display = "none", 2600); };
+const toast = msg => { const t = $("toast"); t.textContent = msg; t.style.display = "block"; setTimeout(() => t.style.display = "none", 2200); };
 const levels = JSON.parse(localStorage.getItem("nvkit-levels") || "{}");
 
-/* ---------- roster ---------- */
+/* ---------- tabs ---------- */
+function switchTab(name) {
+  document.querySelectorAll(".tab").forEach(t => t.classList.toggle("active", t.id === "tab-" + name));
+  document.querySelectorAll("nav button").forEach(b => b.classList.toggle("active", b.dataset.tab === name));
+}
+document.querySelectorAll("nav button").forEach(b => b.onclick = () => switchTab(b.dataset.tab));
+function updateCount() {
+  const c = $("stepcount");
+  c.style.display = pipeline.length ? "block" : "none";
+  c.textContent = pipeline.length;
+}
+
+/* ---------- squad ---------- */
 async function loadRoster() {
   AGENTS = await (await fetch("/api/agents")).json();
   BY_ID = Object.fromEntries(AGENTS.map(a => [a.id, a]));
   const box = $("roster"); box.innerHTML = "";
   for (const a of AGENTS) {
     const card = document.createElement("div");
-    card.className = "worker"; card.id = "worker-" + a.id; card.draggable = true;
+    card.className = "worker"; card.id = "worker-" + a.id;
     card.innerHTML = `
+      <span class="lv">LV.${(levels[a.id] || 0) + 1}</span>
       <span class="badge ${a.live ? "live" : "demo"}">${a.live ? "LIVE" : "DEMO"}</span>
-      <div class="row">
-        <canvas></canvas>
-        <div>
-          <div class="codename" style="color:${a.color}">${a.codename}</div>
-          <div class="api">${a.api}</div>
-          <div class="status" data-status>IDLE</div>
-        </div>
-      </div>
+      <canvas></canvas>
+      <div class="codename" style="color:${a.color}">${a.codename}</div>
+      <div class="api">${a.api}</div>
       <div class="tagline">${a.tagline}</div>
-      <div class="skills">${a.skills.map(s => `<span>${s}</span>`).join("")}</div>
-      <span class="lv">LV.${(levels[a.id] || 0) + 1}</span>`;
+      <button class="recruit">+ RECRUIT</button>`;
     drawSprite(card.querySelector("canvas"), a.id, a.color, 6);
-    card.addEventListener("dragstart", e => e.dataTransfer.setData("text/agent", a.id));
-    card.addEventListener("dblclick", () => addStep(a.id));
+    card.onclick = () => {
+      pipeline.push({ agent_id: a.id, instruction: "" });
+      renderLane(); updateCount();
+      card.classList.remove("pop"); void card.offsetWidth; card.classList.add("pop");
+      toast(`${a.codename} recruited → MISSION tab`);
+    };
     box.appendChild(card);
   }
 }
@@ -300,29 +313,21 @@ async function loadPresets() {
     const chip = document.createElement("button");
     chip.className = "chip";
     chip.textContent = (wf.preset ? "★ " : "✦ ") + wf.name;
-    chip.title = "Load this mission";
     chip.onclick = () => {
-      $("mname").value = wf.name;
-      $("mbrief").value = wf.input;
+      $("mname").value = wf.name; $("mbrief").value = wf.input;
       pipeline = wf.steps.map(s => ({ ...s }));
-      renderPipeline();
+      renderLane(); updateCount();
       toast("Mission loaded — tweak it, then RUN");
     };
     box.appendChild(chip);
   }
 }
 
-/* ---------- pipeline builder ---------- */
-function addStep(agentId) {
-  pipeline.push({ agent_id: agentId, instruction: "" });
-  renderPipeline();
-}
-function renderPipeline(runSteps) {
-  const dz = $("dropzone"); dz.innerHTML = "";
+/* ---------- mission lane ---------- */
+function renderLane(runSteps) {
+  const lane = $("lane"); lane.innerHTML = "";
   if (!pipeline.length) {
-    dz.innerHTML = `<div class="empty">MISSION LANE EMPTY<br>
-      <b>drag a worker here</b> to give it a job —<br>
-      chain workers and each one hands its report to the next</div>`;
+    lane.innerHTML = `<div class="empty">SQUAD EMPTY<br><b>go to SQUAD and tap a worker</b><br>each one hands its report to the next</div>`;
     return;
   }
   pipeline.forEach((step, i) => {
@@ -338,64 +343,59 @@ function renderPipeline(runSteps) {
         ${st ? `<span class="stbadge st-${st.status}">${st.status.toUpperCase()}</span>` : ""}
       </div>
       <div class="ctl">
-        <button title="move up">▲</button>
-        <button title="move down">▼</button>
-        <button title="remove">✕</button>
+        <button>▲ UP</button><button>▼ DOWN</button><button>✕ DISMISS</button>
       </div>`;
     drawSprite(el.querySelector("canvas"), a.id, a.color, 4);
     el.querySelector("textarea").addEventListener("input", e => step.instruction = e.target.value);
     const [up, down, del] = el.querySelectorAll(".ctl button");
-    up.onclick = () => { if (i > 0) { [pipeline[i - 1], pipeline[i]] = [pipeline[i], pipeline[i - 1]]; renderPipeline(runSteps); } };
-    down.onclick = () => { if (i < pipeline.length - 1) { [pipeline[i + 1], pipeline[i]] = [pipeline[i], pipeline[i + 1]]; renderPipeline(runSteps); } };
-    del.onclick = () => { pipeline.splice(i, 1); renderPipeline(); };
-    dz.appendChild(el);
+    up.onclick = () => { if (i > 0) { [pipeline[i - 1], pipeline[i]] = [pipeline[i], pipeline[i - 1]]; renderLane(runSteps); } };
+    down.onclick = () => { if (i < pipeline.length - 1) { [pipeline[i + 1], pipeline[i]] = [pipeline[i], pipeline[i + 1]]; renderLane(runSteps); } };
+    del.onclick = () => { pipeline.splice(i, 1); renderLane(); updateCount(); };
+    lane.appendChild(el);
     if (i < pipeline.length - 1) {
       const ar = document.createElement("div");
       ar.className = "arrow"; ar.textContent = "▼ report passes down ▼";
-      dz.appendChild(ar);
+      lane.appendChild(ar);
     }
   });
 }
-const dz = $("dropzone");
-dz.addEventListener("dragover", e => { e.preventDefault(); dz.classList.add("over"); });
-dz.addEventListener("dragleave", () => dz.classList.remove("over"));
-dz.addEventListener("drop", e => {
-  e.preventDefault(); dz.classList.remove("over");
-  const id = e.dataTransfer.getData("text/agent");
-  if (id && BY_ID[id]) addStep(id);
-});
 
-/* ---------- running missions ---------- */
-function spec() {
-  return { name: $("mname").value || "Untitled mission", input: $("mbrief").value, steps: pipeline };
-}
+/* ---------- running ---------- */
+function spec() { return { name: $("mname").value || "Untitled mission", input: $("mbrief").value, steps: pipeline }; }
+
 async function runMission() {
-  if (!pipeline.length) return toast("Drag at least one worker into the lane first");
+  if (!pipeline.length) { switchTab("squad"); return toast("Recruit at least one worker first"); }
   $("runbtn").disabled = true;
   $("report").style.display = "none"; $("stepreports").innerHTML = "";
   const res = await fetch("/api/runs", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(spec()) });
   if (!res.ok) { $("runbtn").disabled = false; return toast((await res.json()).detail || "Launch failed"); }
   const { run_id } = await res.json();
+  switchTab("report");
   pollTimer = setInterval(() => poll(run_id), 700);
 }
+
 async function poll(runId) {
   const run = await (await fetch("/api/runs/" + runId)).json();
-  // log
+  $("mstatus").textContent = "MISSION: " + run.status.toUpperCase();
+  $("mstatus").className = run.status;
   $("log").innerHTML = run.log.map(l => `<div><span class="t">[${l.t}]</span> ${l.msg}</div>`).join("");
-  // step badges
-  renderPipeline(run.steps);
-  // roster animation
-  const workingId = (run.steps.find(s => s.status === "working") || {}).agent_id;
-  for (const a of AGENTS) {
-    const card = $("worker-" + a.id);
-    card.classList.toggle("working", a.id === workingId);
-    card.querySelector("[data-status]").textContent = a.id === workingId ? "WORKING…" : "IDLE";
+  renderLane(run.steps);
+
+  const working = run.steps.find(s => s.status === "working");
+  const strip = $("strip");
+  if (working) {
+    const a = BY_ID[working.agent_id];
+    strip.classList.add("on");
+    $("striptext").textContent = `${a.codename} working — ${(working.instruction || a.tagline).slice(0, 48)}…`;
+    drawSprite($("stripsprite"), a.id, a.color, 2);
+    for (const ag of AGENTS) $("worker-" + ag.id).classList.toggle("working", ag.id === working.agent_id);
   }
+
   if (run.status === "complete" || run.status === "failed") {
     clearInterval(pollTimer); pollTimer = null;
     $("runbtn").disabled = false;
-    for (const a of AGENTS) { $("worker-" + a.id).classList.remove("working"); $("worker-" + a.id).querySelector("[data-status]").textContent = "IDLE"; }
-    // step reports
+    strip.classList.remove("on");
+    for (const ag of AGENTS) $("worker-" + ag.id).classList.remove("working");
     $("stepreports").innerHTML = "";
     run.steps.forEach((s, i) => {
       if (!s.output) return;
@@ -410,7 +410,7 @@ async function poll(runId) {
       $("report").style.display = "block";
       for (const s of run.steps) levels[s.agent_id] = (levels[s.agent_id] || 0) + 1;
       localStorage.setItem("nvkit-levels", JSON.stringify(levels));
-      loadRoster(); // refresh LV badges
+      loadRoster();
     } else {
       toast("Mission failed — check the log");
     }
@@ -419,7 +419,7 @@ async function poll(runId) {
 
 /* ---------- export / save / clear ---------- */
 async function exportYaml() {
-  if (!pipeline.length) return toast("Nothing to export yet — build a pipeline first");
+  if (!pipeline.length) return toast("Build a pipeline first");
   const res = await fetch("/api/export", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(spec()) });
   if (!res.ok) return toast("Export failed");
   const blob = new Blob([await res.text()], { type: "text/yaml" });
@@ -427,22 +427,23 @@ async function exportYaml() {
   a.href = URL.createObjectURL(blob);
   a.download = ($("mname").value || "mission").toLowerCase().replace(/\s+/g, "-") + ".workflow.yml";
   a.click(); URL.revokeObjectURL(a.href);
-  toast("NAT workflow.yml downloaded — runnable with `nat run`");
+  toast("NAT workflow.yml downloaded");
 }
 async function savePreset() {
   if (!pipeline.length) return toast("Build a pipeline before saving");
   const res = await fetch("/api/workflows", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(spec()) });
   if (!res.ok) return toast("Save failed");
   await loadPresets();
-  toast("Saved — it's now a one-click preset");
+  toast("Saved as one-tap preset");
 }
 $("runbtn").onclick = runMission;
 $("exportbtn").onclick = exportYaml;
 $("savebtn").onclick = savePreset;
-$("clearbtn").onclick = () => { pipeline = []; renderPipeline(); };
+$("clearbtn").onclick = () => { pipeline = []; renderLane(); updateCount(); };
 
 /* ---------- boot ---------- */
-loadRoster().then(() => { renderPipeline(); loadPresets(); });
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js");
+loadRoster().then(() => { renderLane(); loadPresets(); updateCount(); });
 </script>
 </body>
 </html>
