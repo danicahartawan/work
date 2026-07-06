@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "nvkit-platform"
 version = "0.1.0"
-description = "nvkit Missions: installable mobile app (PWA) for building and running workflows with the nvkit API agents"
+description = "nvkit Control Center: web app for building and running workflows with the nvkit API agents (phone companion at /mobile.html)"
 requires-python = ">=3.11"
 dependencies = [
     "fastapi>=0.110",

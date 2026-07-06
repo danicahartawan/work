@@ -23,13 +23,13 @@ nvkit/
     └── pr-team/              Orchestrator + 5 specialist agents for the PR team
 ```
 
-## nvkit Missions app (start here)
+## Control Center (start here)
 
-The fastest way to experience nvkit is the Missions app — an installable
-mobile app (PWA) where each API is a pixel "worker" you tap to recruit onto
-a mission squad, brief, and deploy. Missions run instantly in demo mode (no
-credentials needed) and export to real NAT `workflow.yml` files. Deploy the
-server, open it on a phone, *Add to Home Screen*, done.
+The fastest way to experience nvkit is the Control Center — a web app where
+each API is a pixel "worker" you drag into a mission lane, brief, and deploy.
+Missions run instantly in demo mode (no credentials needed) and export to
+real NAT `workflow.yml` files. A phone-friendly companion lives at
+`/mobile.html` and installs to a home screen like a native app.
 
 ```bash
 pip install -e packages/nvkit-platform
