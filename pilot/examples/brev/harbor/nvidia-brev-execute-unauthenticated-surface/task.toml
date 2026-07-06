@@ -1,0 +1,33 @@
+schema_version = "1.3"
+artifacts = []
+
+[task]
+name = "nvidia/nvidia-brev-execute-unauthenticated-surface"
+description = "An agent can install the Brev CLI and exercise everything that works without an account — help output, version, command discovery — and produce a machine-readable inventory at /app/notes/cli-surface.json of which commands responded and which demanded authentication."
+authors = []
+keywords = ["agent-readiness", "execute"]
+
+[metadata]
+pilot_goal_id = "execute-unauthenticated-surface"
+readiness_dimension = "execute"
+public_info_only = true
+product = "nvidia-brev"
+
+[verifier]
+timeout_sec = 600.0
+collect = []
+
+[verifier.env]
+
+[agent]
+timeout_sec = 900.0
+
+[environment]
+network_mode = "public"
+build_timeout_sec = 600.0
+os = "linux"
+mcp_servers = []
+
+[environment.env]
+
+[solution.env]

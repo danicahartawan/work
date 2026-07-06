@@ -1,0 +1,129 @@
+# Agent-readiness goals for NVIDIA Brev.
+#
+# Written from public information only (github.com/brevdev/brev-cli and
+# docs.nvidia.com/brev) — deliberately, since one pilot use case is comparing
+# products on whether agents can operate them with public info alone.
+#
+# Outcomes, not steps: nothing below tells the agent which command to run.
+
+product:
+  name: nvidia-brev
+  summary: >-
+    NVIDIA Brev provisions cloud GPU dev environments via a CLI and web
+    console. These goals measure whether an AI agent can discover, understand,
+    execute against, and recover from errors when using Brev's public surface.
+  org: nvidia
+  docs:
+    - https://docs.nvidia.com/brev/
+    - https://github.com/brevdev/brev-cli
+
+defaults:
+  agent_timeout_sec: 900
+  verifier_timeout_sec: 600
+
+goals:
+  - id: discover-install
+    dimension: discover
+    public_info_only: true
+    outcome: >
+      Starting from nothing but public internet access, an agent can find,
+      install, and prove that the Brev CLI runs on a clean Linux box.
+    context: >
+      The agent gets no hints about where Brev lives or how it is installed.
+      This measures whether public docs and registries are findable enough.
+    evidence:
+      - cmd_ok: "brev --version"
+      - file_exists: /app/notes/install-source.md
+      - manual: >-
+          /app/notes/install-source.md cites an official NVIDIA or Brev
+          source (docs.nvidia.com or github.com/brevdev), not a third-party
+          blog or a hallucinated URL.
+
+  - id: understand-gpu-provisioning
+    dimension: understand
+    public_info_only: true
+    outcome: >
+      From public documentation alone, an agent can determine the exact CLI
+      command that provisions an instance with a specific GPU type, including
+      the flag format for choosing the GPU, and write that command with a
+      short justification to /app/notes/provision-command.md.
+    context: >
+      Brev's GPU selection uses a structured flag value; this measures
+      whether the parameter format is documented explicitly enough for an
+      agent to construct (not copy) a correct command.
+    evidence:
+      - file_exists: /app/notes/provision-command.md
+      - file_contains: {path: /app/notes/provision-command.md, text: "--gpu"}
+      - manual: >-
+          The recorded command is syntactically valid per current docs
+          (machine-type:gpu-type:count format) and the justification cites
+          the doc page it came from.
+
+  - id: understand-noninteractive-auth
+    dimension: understand
+    public_info_only: true
+    outcome: >
+      An agent preparing to use Brev in CI can determine from public docs how
+      to authenticate without a browser or human present, or produce a
+      precise statement that no such path is documented, with the pages it
+      checked listed in /app/notes/auth-findings.md.
+    context: >
+      Agents run headless. If the only documented auth path requires an
+      interactive browser, that is itself a readiness finding — this goal
+      is expected to surface it either way.
+    evidence:
+      - file_exists: /app/notes/auth-findings.md
+      - file_contains: {path: /app/notes/auth-findings.md, text: "login"}
+      - manual: >-
+          The findings correctly state what the docs do and do not cover for
+          headless auth; "not documented" is an acceptable, even expected,
+          conclusion if the URLs checked are listed.
+
+  - id: execute-unauthenticated-surface
+    dimension: execute
+    public_info_only: true
+    outcome: >
+      An agent can install the Brev CLI and exercise everything that works
+      without an account — help output, version, command discovery — and
+      produce a machine-readable inventory at /app/notes/cli-surface.json of
+      which commands responded and which demanded authentication.
+    context: >
+      Measures the scriptability of the CLI's unauthenticated surface: exit
+      codes, non-interactive behavior, whether it hangs waiting for a TTY.
+    evidence:
+      - cmd_ok: "brev --help"
+      - file_exists: /app/notes/cli-surface.json
+      - cmd_ok: "python3 -c \"import json; json.load(open('/app/notes/cli-surface.json'))\""
+
+  - id: recover-unauthenticated-error
+    dimension: recover
+    failure_injection: >
+      No Brev credentials exist in the environment. The first stateful
+      command the agent runs (e.g. listing instances) will fail with
+      whatever error the CLI emits for an unauthenticated user.
+    outcome: >
+      When a Brev command fails for lack of authentication, an agent can
+      diagnose the failure from the error output alone and write a recovery
+      plan to /app/notes/recovery.md that names the documented remediation
+      instead of retrying blindly.
+    evidence:
+      - file_exists: /app/notes/recovery.md
+      - file_contains: {path: /app/notes/recovery.md, text: "brev login"}
+      - manual: >-
+          The recovery plan quotes the actual error message observed and the
+          remediation matches current docs; the trajectory shows no more
+          than two retries of the failing command.
+
+  - id: discover-gpu-catalog
+    dimension: discover
+    public_info_only: true
+    outcome: >
+      An agent asked "what GPUs can I get on Brev?" can locate the public
+      page that answers it and record the URL plus three example GPU types
+      in /app/notes/gpu-catalog.md.
+    evidence:
+      - file_exists: /app/notes/gpu-catalog.md
+      - file_contains: {path: /app/notes/gpu-catalog.md, text: "http"}
+      - manual: >-
+          The recorded URL is a live official page and the example GPU types
+          actually appear on it.

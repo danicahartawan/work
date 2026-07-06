@@ -1,0 +1,27 @@
+# Agent-readiness dataset for nvidia-brev, compiled by pilot.
+# Run locally:
+#   harbor run -p "harbor/*" -a claude-code -m <model>
+
+[dataset]
+name = "nvidia/nvidia-brev-agent-readiness"
+description = "NVIDIA Brev provisions cloud GPU dev environments via a CLI and web console. These goals measure whether an AI agent can discover, understand, execute against, and recover from errors when using Brev's public surface."
+authors = []
+keywords = ["agent-readiness"]
+
+[[tasks]]
+path = "nvidia-brev-discover-install"
+
+[[tasks]]
+path = "nvidia-brev-understand-gpu-provisioning"
+
+[[tasks]]
+path = "nvidia-brev-understand-noninteractive-auth"
+
+[[tasks]]
+path = "nvidia-brev-execute-unauthenticated-surface"
+
+[[tasks]]
+path = "nvidia-brev-recover-unauthenticated-error"
+
+[[tasks]]
+path = "nvidia-brev-discover-gpu-catalog"

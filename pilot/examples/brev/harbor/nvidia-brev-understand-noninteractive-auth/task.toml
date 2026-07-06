@@ -1,0 +1,33 @@
+schema_version = "1.3"
+artifacts = []
+
+[task]
+name = "nvidia/nvidia-brev-understand-noninteractive-auth"
+description = "An agent preparing to use Brev in CI can determine from public docs how to authenticate without a browser or human present, or produce a precise statement that no such path is documented, with the pages it checked listed in /app/notes/auth-findings.md."
+authors = []
+keywords = ["agent-readiness", "understand"]
+
+[metadata]
+pilot_goal_id = "understand-noninteractive-auth"
+readiness_dimension = "understand"
+public_info_only = true
+product = "nvidia-brev"
+
+[verifier]
+timeout_sec = 600.0
+collect = []
+
+[verifier.env]
+
+[agent]
+timeout_sec = 900.0
+
+[environment]
+network_mode = "public"
+build_timeout_sec = 600.0
+os = "linux"
+mcp_servers = []
+
+[environment.env]
+
+[solution.env]

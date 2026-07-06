@@ -1,0 +1,33 @@
+schema_version = "1.3"
+artifacts = []
+
+[task]
+name = "nvidia/nvidia-brev-understand-gpu-provisioning"
+description = "From public documentation alone, an agent can determine the exact CLI command that provisions an instance with a specific GPU type, including the flag format for choosing the GPU, and write that command with a short justification to /app/notes/provision-command.md."
+authors = []
+keywords = ["agent-readiness", "understand"]
+
+[metadata]
+pilot_goal_id = "understand-gpu-provisioning"
+readiness_dimension = "understand"
+public_info_only = true
+product = "nvidia-brev"
+
+[verifier]
+timeout_sec = 600.0
+collect = []
+
+[verifier.env]
+
+[agent]
+timeout_sec = 900.0
+
+[environment]
+network_mode = "public"
+build_timeout_sec = 600.0
+os = "linux"
+mcp_servers = []
+
+[environment.env]
+
+[solution.env]

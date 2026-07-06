@@ -1,0 +1,33 @@
+schema_version = "1.3"
+artifacts = []
+
+[task]
+name = "nvidia/nvidia-brev-discover-install"
+description = "Starting from nothing but public internet access, an agent can find, install, and prove that the Brev CLI runs on a clean Linux box."
+authors = []
+keywords = ["agent-readiness", "discover"]
+
+[metadata]
+pilot_goal_id = "discover-install"
+readiness_dimension = "discover"
+public_info_only = true
+product = "nvidia-brev"
+
+[verifier]
+timeout_sec = 600.0
+collect = []
+
+[verifier.env]
+
+[agent]
+timeout_sec = 900.0
+
+[environment]
+network_mode = "public"
+build_timeout_sec = 600.0
+os = "linux"
+mcp_servers = []
+
+[environment.env]
+
+[solution.env]
