@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
+    />
+    <title>AR Room Placer</title>
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="./styles.css" />
+    <!-- Three.js is vendored locally (vendor/three.module.js) so the app is
+         fully self-contained: no build step, no CDN, works offline. -->
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "./vendor/three.module.js"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <!-- The GL canvas draws the AR scene; the camera feed shows through because
+         the renderer is created with alpha:true. -->
+    <canvas id="gl"></canvas>
+
+    <!-- dom-overlay root: every 2D control lives here so it composites on top of
+         the live camera during the WebXR session. -->
+    <div id="overlay"></div>
+
+    <script type="module" src="./src/app.js"></script>
+  </body>
+</html>

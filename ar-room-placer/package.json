@@ -1,0 +1,13 @@
+{
+  "name": "ar-room-placer",
+  "version": "0.1.0",
+  "description": "WebXR AR app: drag-and-drop screenshots onto real walls and tables; it guesses a real-world size and fits them to the surface.",
+  "type": "module",
+  "scripts": {
+    "start": "npx --yes http-server -p 8080 -c-1 .",
+    "serve:https": "npx --yes http-server -S -C cert.pem -K key.pem -p 8443 -c-1 .",
+    "test": "node test/sizeGuess.test.js"
+  },
+  "keywords": ["webxr", "ar", "three.js", "hit-test", "plane-detection"],
+  "license": "MIT"
+}
