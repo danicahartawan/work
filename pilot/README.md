@@ -17,13 +17,20 @@ every judgment you haven't made yet into a failing test you can't ignore.
 ```bash
 uv pip install -e "pilot[harbor]"      # harbor extra needs Python 3.12+
 
-pilot init my-product                  # starter goals.yaml + guidance
-pilot questions discover               # what a discover goal should answer
+pilot doctor                           # is this machine ready? (python, harbor)
+pilot wizard --name my-product \       # guided first run: reads your docs +
+  --docs ./docs --sentiment issues.txt #   user sentiment, suggests 3 tasks
 pilot lint goals.yaml                  # catch the traps before compiling
 pilot compile goals.yaml -o harbor     # goals -> Harbor task dirs
 pilot check harbor                     # validate with Harbor's own schema
-harbor run -p "harbor/*" -a claude-code -m <model>
 ```
+
+**First time?** Run `pilot wizard`. It checks your environment, reads your
+docs and a file of user sentiment (GitHub issue titles, forum posts), and
+proposes three starter tasks — one each for discover / understand / recover —
+that you accept, edit, or drop. Everything after is the normal flow below.
+`pilot init` is the bare-bones alternative if you'd rather start from a blank
+goals file.
 
 A complete worked example against NVIDIA Brev is in
 [`examples/brev/`](examples/brev/) — `goals.yaml` plus the compiled dataset.

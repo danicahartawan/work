@@ -10,8 +10,10 @@ from rich.table import Table
 
 from pilot import __version__
 from pilot.compiler import compile_spec, count_todos
+from pilot.doctor import run_checks, summarize
 from pilot.model import Finding, SpecError, lint, load_spec
 from pilot.questions import DIMENSIONS, QUESTION_BANK
+from pilot.wizard import wizard as _wizard
 
 app = typer.Typer(
     help=(
@@ -91,6 +93,29 @@ def init(
         raise typer.Exit(1)
     output.write_text(_STARTER.format(name=name))
     console.print(f"Wrote {output}. Next: edit the goals, then `pilot lint {output}`.")
+
+
+app.command("wizard")(_wizard)
+
+
+@app.command()
+def doctor() -> None:
+    """Check that this machine is ready to author and compile readiness tasks."""
+    checks = run_checks()
+    for c in checks:
+        mark = "✓" if c.ok else ("✗" if c.level == "required" else "•")
+        color = "green" if c.ok else ("red" if c.level == "required" else "yellow")
+        console.print(f"[{color}]{mark}[/{color}] {c.name}: {c.detail}")
+        if not c.ok and c.fix:
+            console.print(f"    [dim]{c.fix}[/dim]")
+    blocking, warnings = summarize(checks)
+    if blocking:
+        console.print(f"\n[red]{blocking} required check(s) failed.[/red]")
+        raise typer.Exit(1)
+    console.print(
+        f"\n[green]Ready.[/green]"
+        + (f" [yellow]({warnings} recommended item(s) missing)[/yellow]" if warnings else "")
+    )
 
 
 @app.command()

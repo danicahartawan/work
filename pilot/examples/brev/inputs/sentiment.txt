@@ -1,0 +1,13 @@
+# Illustrative user-sentiment sample for the pilot wizard demo.
+# One item per line (as you'd export from GitHub issue titles, a forum, or
+# a support queue). Synthetic and paraphrased — not real quotes.
+brev login just hangs forever behind my corporate proxy
+install-latest.sh fails with a 403 from GitHub, can't install the CLI
+getting "Forbidden" when I run brev ls, no idea what auth it wants
+the installer can't reach github, is there another way to install brev?
+brev create errored out and the message didn't say what to fix
+how do I authenticate brev without a browser? docs are unclear
+proxy blocks the brev api, connection times out on every command
+love the product once it works but setup was really confusing
+brev binary not found after install, PATH wasn't updated
+token expired and I couldn't tell from the error, just said forbidden

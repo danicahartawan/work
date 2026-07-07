@@ -14,6 +14,7 @@ dependencies = [
 [project.optional-dependencies]
 # `pilot check` uses Harbor's own task models when available.
 harbor = ["harbor>=0.17"]
+dev = ["pytest>=8.0"]
 
 [project.scripts]
 pilot = "pilot.cli:app"
